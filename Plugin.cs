@@ -125,21 +125,21 @@ public class Plugin : BaseUnityPlugin
         try{
 
             // Guard clause - Ensure player isn't in a menu
-            if (Inventory.inv.isMenuOpen()){
+            if (Inventory.Instance.isMenuOpen()){
                 return;
             }
 
             // Get the target tile location
-            int x = Mathf.RoundToInt(NetworkMapSharer.share.localChar.myInteract.tileHighlighter.transform.position.x / 2f);
-            int y = Mathf.RoundToInt(NetworkMapSharer.share.localChar.myInteract.tileHighlighter.transform.position.y / 2f);
-            int z = Mathf.RoundToInt(NetworkMapSharer.share.localChar.myInteract.tileHighlighter.transform.position.z / 2f);
+            int x = Mathf.RoundToInt(NetworkMapSharer.Instance.localChar.myInteract.tileHighlighter.transform.position.x / 2f);
+            int y = Mathf.RoundToInt(NetworkMapSharer.Instance.localChar.myInteract.tileHighlighter.transform.position.y / 2f);
+            int z = Mathf.RoundToInt(NetworkMapSharer.Instance.localChar.myInteract.tileHighlighter.transform.position.z / 2f);
 
             // Get the tile information if available
-            int highlighterTileObjectID = WorldManager.manageWorld.onTileMap[x,z];
+            int highlighterTileObjectID = WorldManager.Instance.onTileMap[x,z];
             if (highlighterTileObjectID == crabPotTileID){
 
                 // Guard clause - Ensure you can't fill already full pots
-                TileObject tileObj = WorldManager.manageWorld.findTileObjectInUse(x,z);
+                TileObject tileObj = WorldManager.Instance.findTileObjectInUse(x,z);
                 if (tileObj.tileObjectGrowthStages.getShowingStage() > 0){
                     // Suppressed as a bit spammy
                     //Log("This crabpot is already full!");
@@ -152,8 +152,8 @@ public class Plugin : BaseUnityPlugin
                 if (portionsRemaining == 0){
 
                     // get currently held item information
-                    int invIndex = Inventory.inv.selectedSlot;
-                    int heldItemID = Inventory.inv.invSlots[invIndex].itemNo;
+                    int invIndex = Inventory.Instance.selectedSlot;
+                    int heldItemID = Inventory.Instance.invSlots[invIndex].itemNo;
 
                     // Guard clause - Don't proceed if player has empty hands
                     if (heldItemID <= 0){
@@ -164,7 +164,7 @@ public class Plugin : BaseUnityPlugin
                     // Guard clause - Only valid crabpot items can be fed into the pots
                     bool canBeFedIntoCrabpot = false;
                     int inputIndex = 0;
-                    string heldItemName = Inventory.inv.allItems[heldItemID].getInvItemName();
+                    string heldItemName = Inventory.Instance.allItems[heldItemID].getInvItemName();
                     foreach(int id in parsedInputs){
                         inputIndex += 1;
                         if (heldItemID == id){
@@ -184,12 +184,12 @@ public class Plugin : BaseUnityPlugin
                     }
 
                     // subtract the cost item
-                    Inventory.inv.invSlots[invIndex].stack -= 1;
-                    Inventory.inv.invSlots[invIndex].refreshSlot();
+                    Inventory.Instance.invSlots[invIndex].stack -= 1;
+                    Inventory.Instance.invSlots[invIndex].refreshSlot();
                     
                     // Update player animation if stack is empty so they don't keep holding the consumed item
-                    if (Inventory.inv.invSlots[invIndex].stack <= 0){
-                        Inventory.inv.consumeItemInHand();
+                    if (Inventory.Instance.invSlots[invIndex].stack <= 0){
+                        Inventory.Instance.consumeItemInHand();
                     }
 
                     // Add the consumed item to the portion count
@@ -200,8 +200,8 @@ public class Plugin : BaseUnityPlugin
                 // Actually fill the crabpot
                 portionsRemaining -= 1;
                 int growthStageFilled = 1;
-                WorldManager.manageWorld.onTileStatusMap[x, z] = growthStageFilled;
-                NetworkMapSharer.share.RpcGiveOnTileStatus(growthStageFilled, x, z);
+                WorldManager.Instance.onTileStatusMap[x, z] = growthStageFilled;
+                NetworkMapSharer.Instance.RpcGiveOnTileStatus(growthStageFilled, x, z);
 
                 // Provide some feedback so it's clear how much bait remains
                 if ((portionsRemaining == 0) && (portionsToGain != 1)){
